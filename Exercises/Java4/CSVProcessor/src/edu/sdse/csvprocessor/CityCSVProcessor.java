@@ -3,10 +3,18 @@ package edu.sdse.csvprocessor;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class CityCSVProcessor {
 	
 	public void readAndProcess(File file) {
+
+		ArrayList<CityRecord> allRecords = new ArrayList<CityRecord>();
+		HashMap<String, ArrayList<CityRecord>> cityMap = new HashMap<String, ArrayList<CityRecord>>();
+
 		//Try with resource statement (as of Java 8)
 		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
 			//Discard header row
@@ -25,9 +33,44 @@ public class CityCSVProcessor {
 				
 				CityRecord myCity = new CityRecord(id,year,city,population);
 				//System.out.println(myCity.toString());
-				System.out.println(myCity);
+				allRecords.add(myCity);
+
+				if (cityMap.containsKey(myCity.getCity())) {
+					cityMap.get(myCity.getCity()).add(myCity);
+				}
+				else {
+					ArrayList<CityRecord> temp = new ArrayList<CityRecord>();
+					cityMap.put(myCity.getCity(), temp);
+				}
+
 				//TODO: Extend the program to process entries!
 			}
+			//No of entries
+			for (Map.Entry<String, ArrayList<CityRecord>> entry : cityMap.entrySet()) {
+				System.out.println("Total number of entries for " + entry.getKey() + ": " + entry.getValue().size());
+
+				int pop = 0;
+				int maxYear = 0;
+				int minYear = 3000;
+				for (CityRecord p: entry.getValue()) {
+					pop += p.getPopulation();
+
+					if (p.getYear() > maxYear){
+						maxYear = p.getYear();
+					}
+					if (p.getYear() < minYear){
+						minYear = p.getYear();
+					}
+				}
+				pop = pop/entry.getValue().size();
+
+				System.out.println("Average population = " + pop);
+				System.out.println("Min year: " + minYear);
+				System.out.println("Max year: " + maxYear);
+			}
+
+
+			
 		} catch (Exception e) {
 			System.err.println("An error occurred:");
 			e.printStackTrace();
